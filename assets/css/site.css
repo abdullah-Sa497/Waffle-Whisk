@@ -504,6 +504,10 @@ main{position:relative}
 .visit-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);align-items:center}
 .status-lg{margin:24px 0 20px;padding:11px 18px;border:2px solid rgba(255,246,233,.5);border-radius:999px;font:500 .95rem/1.2 var(--f-mono)}
 .visit address{font-style:normal;font-size:1.15rem;line-height:1.55}
+.contact{display:flex;flex-wrap:wrap;gap:0 22px;margin-top:8px}
+.contact a{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:rgba(255,246,233,.45);overflow-wrap:anywhere}
+.contact a:hover{text-decoration-color:var(--butter)}
+.contact .ic{width:18px;height:18px}
 .hours{display:grid;gap:8px;margin:22px 0 0}
 .hours li{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:13px 18px;border:2px solid rgba(255,246,233,.28);border-radius:16px;font:500 .95rem/1.3 var(--f-mono)}
 .hours li.is-today{background:var(--butter);border-color:var(--butter);color:var(--maple)}

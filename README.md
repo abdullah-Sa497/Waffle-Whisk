@@ -39,7 +39,7 @@ Then open the address it prints. Opening `index.html` directly also works, but s
 
 ## Placeholder content
 
-This is a demo build. The address, phone and WhatsApp number (`923000000000`), prices, deals, event date and opening hours are placeholders. The number and hours live in the `CONFIG` block at the top of `assets/js/site.js`.
+This is a demo build. Contact links use real details: WhatsApp and phone +92 310 6019669, Instagram @__abdullahch__, and email abdullahch7622@gmail.com. The address, prices, deals, event date, opening hours and the Foodpanda link are still placeholders. The WhatsApp number and hours live in the `CONFIG` block at the top of `assets/js/site.js`.
 
 ## Credits
 

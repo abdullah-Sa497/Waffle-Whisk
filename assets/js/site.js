@@ -7,7 +7,7 @@
      number and hours are in.
      ------------------------------------------------------- */
   const CONFIG = {
-    whatsapp: '923000000000',          // country code + number, no plus sign
+    whatsapp: '923106019669',          // country code + number, no plus sign
     // Opening hours in Lahore time (24h). Index = day, 0 Sunday to 6 Saturday.
     hours: [[8, 16], [7, 15], [7, 15], [7, 15], [7, 15], [7, 15], [8, 16]],
     maxGuests: 12,
