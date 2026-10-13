@@ -169,6 +169,8 @@ main:focus{outline:none}
 .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
 .settle-sticker{position:absolute;z-index:2;left:-14px;top:-34px;width:clamp(104px,26vw,150px);pointer-events:none}
 .settle-sticker .badge-svg{transform:rotate(-10deg)}
+/* phones and small tablets: the promise section's badge sits just below, so the hero one would be a double */
+@media (max-width:959px){html:not(.scrub) .settle-sticker{display:none}}
 
 /* static hero entrance, on load */
 .hero-static > *{animation:rise-in .9s var(--ease-out) both}
