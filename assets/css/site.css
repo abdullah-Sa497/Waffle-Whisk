@@ -269,6 +269,11 @@ main:focus{outline:none}
 .hero-loading .loader{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:24px;background:var(--butter);color:var(--maple);transition:transform 1s cubic-bezier(.76,0,.24,1);will-change:transform;--lp:0}
 .hero-loading:not(.loader-out),.hero-loading:not(.loader-out) body{overflow:hidden}
 .loader-out .loader{transform:translateY(calc(-100% - 150px))}
+.loader-meter{display:grid;justify-items:center;gap:16px}
+.loader-slow{margin-top:6px;font-weight:600;animation:rise-in .6s var(--ease-out) both}
+.loader-slow[hidden]{display:none}
+.loader-skip{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;border:0;background:none;color:var(--maple);font:800 1rem/1 var(--f-body);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer}
+.loader-skip:hover{text-decoration-color:var(--accent-ink)}
 .loader-inner{display:grid;justify-items:center;gap:16px;text-align:center;transition:opacity .45s var(--ease-out),transform .6s var(--ease-out)}
 .loader-out .loader-inner{opacity:0;transform:translateY(-24px) scale(.95)}
 .loader-badge{display:block;width:clamp(170px,16vw,230px);height:auto;overflow:visible}

@@ -25,8 +25,10 @@
   /* -------------------------------------------------------
      First-visit loader. <head> adds html.hero-loading when the
      scroll film will run and the visitor lands at the top. It
-     spins with honest progress while the video downloads, then
-     lifts away. It never waits longer than MAX_MS.
+     spins with honest progress until the video has downloaded,
+     then lifts away. On a slow line a Skip option appears after
+     SKIP_MS; a stalled download (no data for 20 s) or MAX_MS
+     always lets people in.
      ------------------------------------------------------- */
   const loader = (() => {
     const el = $('#loader');
@@ -34,12 +36,17 @@
       return { active: false, progress() {}, ready() {}, dismiss() {}, onLift(fn) { fn(); } };
     }
     const MIN_MS = 800;                                 // never just flash
-    const MAX_MS = 12000;                               // never hold anyone longer than this, counted from page open
+    const SKIP_MS = 6000;                               // then offer a way in, counted from page open
+    const MAX_MS = 45000;                               // absolute ceiling, counted from page open
     const t0 = performance.now();
     const liftFns = [];
     let state = 'loading', lastPct = -1;
     const maxTimer = setTimeout(() => dismiss(), Math.max(1500, MAX_MS - t0));
+    const meter = $('.loader-meter', el) || el;
     const pctEl = $('[data-loader-pct]', el);
+    const slow = $('.loader-slow', el);
+    const skipTimer = setTimeout(() => { if (state === 'loading' && slow) slow.hidden = false; }, Math.max(0, SKIP_MS - t0));
+    if (slow) $('.loader-skip', slow).addEventListener('click', () => dismiss());
     const blocked = [$('.skip'), $('#header'), $('#main'), $('#visit'), $('.mobile-bar')].filter(Boolean);
     blocked.forEach(n => n.setAttribute('inert', ''));   // nothing behind the loader takes focus
 
@@ -49,7 +56,7 @@
       if (pct === lastPct) return;
       lastPct = pct;
       pctEl.textContent = pct;
-      el.setAttribute('aria-valuenow', pct);
+      meter.setAttribute('aria-valuenow', pct);
       el.style.setProperty('--lp', (pct / 100).toFixed(2));
     }
     function ready() {
@@ -66,7 +73,10 @@
       if (state !== 'loading') return;
       state = 'leaving';
       clearTimeout(maxTimer);
+      clearTimeout(skipTimer);
+      const hadFocus = el.contains(document.activeElement);
       blocked.forEach(n => n.removeAttribute('inert'));
+      if (hadFocus) $('#main').focus({ preventScroll: true });   // keyboard users who pressed Skip land on the page
       liftFns.splice(0).forEach(fn => fn());    // the hero's first caption assembles as the curtain rises
       if (RM.matches) { finish(); return; }
       el.addEventListener('transitionend', e => { if (e.target === el && e.propertyName === 'transform') finish(); });
@@ -135,7 +145,7 @@
   const ring = $('.ring', hero);
   const cue = $('.hero-cue', hero);
   const VIDEO_URL = 'assets/video/hero-scrub.mp4';
-  const VIDEO_BYTES = 4738896;               // real size: fallback when Content-Length is missing
+  const VIDEO_BYTES = 2175597;               // real size: fallback when Content-Length is missing
   const POSTER_URL = 'assets/img/hero-poster.jpg';
 
   // These five strings match the inline gate in <head> and the CSS guard exactly.

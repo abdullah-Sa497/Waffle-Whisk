@@ -55,8 +55,9 @@
 </head>
 <body>
 <!-- First-visit loader (laptops and desktops only): spins while the scroll film downloads, then lifts away. -->
-<div class="loader" id="loader" role="progressbar" aria-label="Loading the waffle video" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+<div class="loader" id="loader">
   <div class="loader-inner">
+    <div class="loader-meter" role="progressbar" aria-label="Loading the waffle video" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
     <svg class="loader-badge" viewBox="0 0 200 200" aria-hidden="true">
       <defs>
         <path id="bp-loader" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/>
@@ -74,6 +75,8 @@
     </svg>
     <p class="loader-title">Warming up the iron</p>
     <p class="loader-pct" aria-hidden="true"><span data-loader-pct>0</span>%</p>
+    </div>
+    <p class="loader-slow" hidden>Slow connection? <button class="loader-skip" type="button">Skip to the site</button></p>
   </div>
   <svg class="loader-drip" viewBox="0 0 1440 110" preserveAspectRatio="none" aria-hidden="true"><path d="M0,0H1440V26L1363,26Q1351,26 1351,38L1351,79A11,11 0 0 1 1329,79L1329,38Q1329,26 1317,26L1230,26Q1218,26 1218,38L1218,58A8,8 0 0 1 1202,58L1202,38Q1202,26 1190,26L1106,26Q1094,26 1094,38L1094,96A14,14 0 0 1 1066,96L1066,38Q1066,26 1054,26L981,26Q969,26 969,38L969,67A9,9 0 0 1 951,67L951,38Q951,26 939,26L844,26Q832,26 832,38L832,84A12,12 0 0 1 808,84L808,38Q808,26 796,26L710,26Q698,26 698,38L698,62A8,8 0 0 1 682,62L682,38Q682,26 670,26L587,26Q575,26 575,38L575,103A15,15 0 0 1 545,103L545,38Q545,26 533,26L453,26Q441,26 441,38L441,77A11,11 0 0 1 419,77L419,38Q419,26 407,26L319,26Q307,26 307,38L307,57A7,7 0 0 1 293,57L293,38Q293,26 281,26L215,26Q203,26 203,38L203,91A13,13 0 0 1 177,91L177,38Q177,26 165,26L91,26Q79,26 79,38L79,67A9,9 0 0 1 61,67L61,38Q61,26 49,26L0,26Z"/></svg>
 </div>
