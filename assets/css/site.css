@@ -261,6 +261,32 @@ main:focus{outline:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* =========================================================
+   FIRST-VISIT LOADER (scroll film only, decided in <head>)
+   Spins while the hero video downloads, with honest
+   progress, then lifts away like a syrup curtain.
+   ========================================================= */
+.loader{display:none}
+.hero-loading .loader{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:24px;background:var(--butter);color:var(--maple);transition:transform 1s cubic-bezier(.76,0,.24,1);will-change:transform;--lp:0}
+.hero-loading:not(.loader-out),.hero-loading:not(.loader-out) body{overflow:hidden}
+.loader-out .loader{transform:translateY(calc(-100% - 150px))}
+.loader-inner{display:grid;justify-items:center;gap:16px;text-align:center;transition:opacity .45s var(--ease-out),transform .6s var(--ease-out)}
+.loader-out .loader-inner{opacity:0;transform:translateY(-24px) scale(.95)}
+.loader-badge{display:block;width:clamp(170px,16vw,230px);height:auto;overflow:visible}
+.ld-ring{fill:var(--panel);stroke:var(--maple);stroke-width:3}
+.ld-text{font:500 16px var(--f-mono);letter-spacing:3.5px;fill:var(--maple)}
+.ld-spin{transform-origin:100px 100px;animation:spin 2.8s linear infinite}
+.ld-waffle{transform-origin:100px 100px;animation:ld-wobble 1.6s ease-in-out infinite alternate}
+@keyframes ld-wobble{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.ld-base{fill:var(--butter)}
+.ld-syrup{fill:var(--syrup);transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--lp));transition:transform .3s linear}
+.ld-grid{fill:none;stroke:var(--maple);stroke-width:3.5;stroke-linecap:round}
+.ld-edge{fill:none;stroke:var(--maple);stroke-width:3}
+.ld-dot{fill:var(--accent);stroke:var(--maple);stroke-width:3}
+.loader-title{font:400 clamp(28px,2.6vw,40px)/1.05 var(--f-display)}
+.loader-pct{font:500 1rem/1 var(--f-mono);letter-spacing:.1em}
+.loader-drip{position:absolute;left:0;top:calc(100% - 1px);width:100%;height:clamp(60px,8vw,130px);fill:var(--butter);pointer-events:none}
+
+/* =========================================================
    Reveal system: containers get .in, children .rv stagger,
    then .done retires the delays so hovers never lag.
    ========================================================= */
@@ -391,8 +417,8 @@ main:focus{outline:none}
 .w-base{fill:#E9B461}
 .w-cells rect{fill:#D9963F;stroke:#B97A2C;stroke-width:1.5}
 .w-rim{fill:none;stroke:var(--maple);stroke-width:3}
-.w-syrup rect{fill:var(--syrup);transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(clamp(0,calc(var(--p) * 16 - var(--i)),1))}
-.pour-stream{fill:var(--syrup);transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);opacity:0;transition:transform .35s var(--ease-out),opacity .25s var(--ease-out)}
+.w-syrup rect{fill:var(--deal,var(--syrup));transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(clamp(0,calc(var(--p) * 16 - var(--i)),1))}
+.pour-stream{fill:var(--deal,var(--syrup));transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);opacity:0;transition:transform .35s var(--ease-out),opacity .25s var(--ease-out)}
 .t-pour.holding .pour-stream{transform:scaleY(1);opacity:1}
 .t-pour.done .pour-stream{transform:scaleY(0);opacity:0}
 .sparks path{fill:var(--accent);stroke:var(--maple);stroke-width:1.5;transform-box:fill-box;transform-origin:center;transform:scale(0)}
@@ -407,6 +433,7 @@ main:focus{outline:none}
 .t-pour.done .pour-btn{--bg:var(--mint)}
 .pour-result{margin-top:12px;font-weight:800;color:var(--maple);min-height:1.6em}
 .t-pour.done .pour-result{animation:rise-in .6s var(--ease-out) both}
+.deal-code{display:flex;width:max-content;margin-top:10px;padding:6px 12px;background:var(--butter);border:2px solid var(--maple);border-radius:999px;box-shadow:0 3px 0 var(--maple);font:500 .875rem/1 var(--f-mono);letter-spacing:.08em}
 
 /* =========================================================
    FAQ

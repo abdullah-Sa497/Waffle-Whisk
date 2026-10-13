@@ -35,12 +35,49 @@
   ];
   var d = document.documentElement;
   d.classList.add('js');
-  if (!q.some(function (s) { return window.matchMedia(s).matches; })) d.classList.add('scrub');
+  // Safety net: if site.js fails to load or does not finish setting up, fall back to the plain page:
+  // everything visible, the designed still hero, no loader, nothing inert. site.js sets data-js-done.
+  window.__wwFallback = function (force) {
+    if (!force && d.hasAttribute('data-js-done')) return;
+    d.classList.remove('js', 'scrub', 'hero-loading', 'loader-out');
+    var n = document.querySelectorAll('[inert]');
+    for (var i = 0; i < n.length; i++) n[i].removeAttribute('inert');
+  };
+  if (!q.some(function (s) { return window.matchMedia(s).matches; })) {
+    d.classList.add('scrub');
+    // Landing at the top: hold the branded loader until the scroll film has downloaded (site.js lifts it).
+    if (!location.hash || location.hash === '#top') d.classList.add('hero-loading');
+    setTimeout(function () { window.__wwFallback(false); }, 16000);
+  }
 })();
 </script>
-<script src="assets/js/site.js" defer></script>
+<script src="assets/js/site.js" defer onerror="window.__wwFallback && window.__wwFallback(true)"></script>
 </head>
 <body>
+<!-- First-visit loader (laptops and desktops only): spins while the scroll film downloads, then lifts away. -->
+<div class="loader" id="loader" role="progressbar" aria-label="Loading the waffle video" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="loader-inner">
+    <svg class="loader-badge" viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <path id="bp-loader" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/>
+        <clipPath id="ld-clip"><rect x="62" y="62" width="76" height="76" rx="18"/></clipPath>
+      </defs>
+      <circle cx="100" cy="100" r="96" class="ld-ring"/>
+      <g class="ld-spin"><text class="ld-text"><textPath href="#bp-loader">HOT OFF THE IRON · MADE TO ORDER · </textPath></text></g>
+      <g class="ld-waffle">
+        <rect x="62" y="62" width="76" height="76" rx="18" class="ld-base"/>
+        <g clip-path="url(#ld-clip)"><rect x="62" y="62" width="76" height="76" class="ld-syrup"/></g>
+        <path d="M87 70v60M113 70v60M70 87h60M70 113h60" class="ld-grid"/>
+        <rect x="62" y="62" width="76" height="76" rx="18" class="ld-edge"/>
+        <circle cx="134" cy="66" r="9" class="ld-dot"/>
+      </g>
+    </svg>
+    <p class="loader-title">Warming up the iron</p>
+    <p class="loader-pct" aria-hidden="true"><span data-loader-pct>0</span>%</p>
+  </div>
+  <svg class="loader-drip" viewBox="0 0 1440 110" preserveAspectRatio="none" aria-hidden="true"><path d="M0,0H1440V26L1363,26Q1351,26 1351,38L1351,79A11,11 0 0 1 1329,79L1329,38Q1329,26 1317,26L1230,26Q1218,26 1218,38L1218,58A8,8 0 0 1 1202,58L1202,38Q1202,26 1190,26L1106,26Q1094,26 1094,38L1094,96A14,14 0 0 1 1066,96L1066,38Q1066,26 1054,26L981,26Q969,26 969,38L969,67A9,9 0 0 1 951,67L951,38Q951,26 939,26L844,26Q832,26 832,38L832,84A12,12 0 0 1 808,84L808,38Q808,26 796,26L710,26Q698,26 698,38L698,62A8,8 0 0 1 682,62L682,38Q682,26 670,26L587,26Q575,26 575,38L575,103A15,15 0 0 1 545,103L545,38Q545,26 533,26L453,26Q441,26 441,38L441,77A11,11 0 0 1 419,77L419,38Q419,26 407,26L319,26Q307,26 307,38L307,57A7,7 0 0 1 293,57L293,38Q293,26 281,26L215,26Q203,26 203,38L203,91A13,13 0 0 1 177,91L177,38Q177,26 165,26L91,26Q79,26 79,38L79,67A9,9 0 0 1 61,67L61,38Q61,26 49,26L0,26Z"/></svg>
+</div>
+
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="env" aria-hidden="true"><span class="glow g1"></span><span class="glow g2"></span></div>
@@ -357,7 +394,7 @@
           </div>
           <div class="pour-copy">
             <h3 id="pour-title">Secret deal</h3>
-            <p class="pour-hint">Press and hold to pour.</p>
+            <p class="pour-hint">Six secret deals. Press and hold to pour yours.</p>
             <button class="btn btn-accent pour-btn" type="button" aria-describedby="pour-result"><span class="pour-fill" aria-hidden="true"></span><span class="pour-label">Hold to pour</span></button>
             <p class="pour-result" id="pour-result" aria-live="polite"></p>
           </div>

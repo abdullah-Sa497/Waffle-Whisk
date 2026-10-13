@@ -6,10 +6,11 @@ A scroll-driven website for Waffle Whisk, a breakfast spot on MM Alam Road, Gulb
 
 ## What it does
 
+- **First-visit loader.** On laptops and desktops, a themed loader (a spinning "Hot off the iron" badge around a waffle that fills with syrup as the download progresses) holds the page until the hero video is ready, then lifts away like a syrup curtain. It never waits longer than 12 seconds, lifts at once if the video fails, and never appears on phones.
 - **Scroll film hero.** On laptops and desktops, a hero video of maple syrup pouring onto a waffle plays forward as you scroll down and backward as you scroll up. Captions appear on sticker cards along the way. Phones, tablets in portrait and reduced-motion visitors get a still image instead, and never download the video.
 - **Live open or closed status** in the header and footer, based on Lahore time.
 - **Menu** with Waffles, Pancakes, Savory and Drinks tabs (keyboard friendly).
-- **Deals and events**, with today's deal marked automatically, plus a "hold to pour" secret deal.
+- **Deals and events**, with today's deal marked automatically, plus a "hold to pour" secret deal: each new visitor is dealt one of six secret deals at random (each pours its own colour and shows a code for the counter), and keeps the same deal on return visits.
 - **Book a table or join the waitlist.** The form checks your details, then opens WhatsApp with the booking typed out.
 - **Find us** section with hours (today highlighted), directions and an embedded map.
 

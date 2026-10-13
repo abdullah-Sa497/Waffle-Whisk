@@ -23,6 +23,60 @@
   const root = document.documentElement;
 
   /* -------------------------------------------------------
+     First-visit loader. <head> adds html.hero-loading when the
+     scroll film will run and the visitor lands at the top. It
+     spins with honest progress while the video downloads, then
+     lifts away. It never waits longer than MAX_MS.
+     ------------------------------------------------------- */
+  const loader = (() => {
+    const el = $('#loader');
+    if (!el || !root.classList.contains('hero-loading')) {
+      return { active: false, progress() {}, ready() {}, dismiss() {}, onLift(fn) { fn(); } };
+    }
+    const MIN_MS = 800;                                 // never just flash
+    const MAX_MS = 12000;                               // never hold anyone longer than this, counted from page open
+    const t0 = performance.now();
+    const liftFns = [];
+    let state = 'loading', lastPct = -1;
+    const maxTimer = setTimeout(() => dismiss(), Math.max(1500, MAX_MS - t0));
+    const pctEl = $('[data-loader-pct]', el);
+    const blocked = [$('.skip'), $('#header'), $('#main'), $('#visit'), $('.mobile-bar')].filter(Boolean);
+    blocked.forEach(n => n.setAttribute('inert', ''));   // nothing behind the loader takes focus
+
+    function progress(frac) {
+      if (state !== 'loading') return;
+      const pct = clamp(Math.floor(frac * 100), 0, 100);
+      if (pct === lastPct) return;
+      lastPct = pct;
+      pctEl.textContent = pct;
+      el.setAttribute('aria-valuenow', pct);
+      el.style.setProperty('--lp', (pct / 100).toFixed(2));
+    }
+    function ready() {
+      progress(1);
+      setTimeout(() => dismiss(), Math.max(0, MIN_MS - (performance.now() - t0)));
+    }
+    function finish() {
+      if (state === 'gone') return;
+      state = 'gone';
+      root.classList.remove('hero-loading', 'loader-out');
+      el.hidden = true;
+    }
+    function dismiss() {
+      if (state !== 'loading') return;
+      state = 'leaving';
+      clearTimeout(maxTimer);
+      blocked.forEach(n => n.removeAttribute('inert'));
+      liftFns.splice(0).forEach(fn => fn());    // the hero's first caption assembles as the curtain rises
+      if (RM.matches) { finish(); return; }
+      el.addEventListener('transitionend', e => { if (e.target === el && e.propertyName === 'transform') finish(); });
+      setTimeout(finish, 1500);                 // in case transitionend never fires (hidden tab)
+      root.classList.add('loader-out');         // the curtain lifts and scrolling is free again
+    }
+    return { active: true, progress, ready, dismiss, onLift(fn) { if (state === 'loading') liftFns.push(fn); else fn(); } };
+  })();
+
+  /* -------------------------------------------------------
      Lahore time (UTC+5 all year, no daylight saving)
      ------------------------------------------------------- */
   function lahore(offsetDays = 0) {
@@ -159,7 +213,7 @@
     const edge = Math.min(18 / rangeVh, 0.05);
     for (const B of bands) {
       const f = Math.min(edge, (B.b - B.a) / 3);
-      const op = (B.first ? 1 : smoothstep(p, B.a, B.a + f)) * (B.last ? 1 : 1 - smoothstep(p, B.b - f, B.b));
+      const op = (B.first ? Math.min(1, loadK * 4) : smoothstep(p, B.a, B.a + f)) * (B.last ? 1 : 1 - smoothstep(p, B.b - f, B.b));
       const ramp = B.ramp || Math.min(20 / rangeVh, (B.b - B.a) * 0.35);
       let k = clamp((p - B.a) / ramp, 0, 1);
       if (B.first) k = Math.max(k, loadK);
@@ -226,11 +280,13 @@
   }
 
   // The poster wins the bandwidth race; the video streams in behind an honest ring.
+  // With the loader up, the film is what the visitor is waiting for, so it starts at once.
   function initHeroOnce() {
     if (heroInited) return;
     heroInited = true;
     let started = false;
     const start = () => { if (started) return; started = true; loadHeroBlob().catch(failVideo); };
+    if (loader.active) { start(); return; }
     const img = new Image();
     img.onload = start;
     img.onerror = start;
@@ -240,7 +296,7 @@
   async function loadHeroBlob() {
     const ctrl = new AbortController();
     let watchdog = setTimeout(() => ctrl.abort(), 20000);
-    const res = await fetch(VIDEO_URL, { priority: 'low', signal: ctrl.signal });
+    const res = await fetch(VIDEO_URL, { priority: loader.active ? 'high' : 'low', signal: ctrl.signal });
     if (!res.ok || !res.body) throw new Error('video ' + res.status);
     const total = Number(res.headers.get('Content-Length')) || VIDEO_BYTES;
     const reader = res.body.getReader();
@@ -258,20 +314,56 @@
       if (now - lastRing > 100 || frac === 1) {
         lastRing = now;
         ring.style.setProperty('--ld', Math.round(126 * (1 - frac)));
+        loader.progress(frac * 0.97);           // the last few percent wait for the first decoded frame
       }
     }
     clearTimeout(watchdog);
     ring.style.setProperty('--ld', 0);
-    video.addEventListener('canplay', () => {
-      videoReady = true;
-      requestSeek(shown * video.duration);
-      stage.classList.add('video-ready');
-    }, { once: true });
-    video.src = URL.createObjectURL(new Blob(chunks, { type: 'video/mp4' }));
-    video.load();
+    await attachVideo(new Blob(chunks, { type: 'video/mp4' }));
+  }
+
+  // Hand the downloaded film to the <video> element; resolve once a frame can be shown.
+  function attachVideo(blob) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const cleanup = () => {
+        clearTimeout(timer);
+        video.removeEventListener('loadeddata', ok);
+        video.removeEventListener('canplay', ok);
+        video.removeEventListener('error', bad);
+      };
+      const ok = () => { if (settled) return; settled = true; cleanup(); onVideoReady().then(resolve, resolve); };
+      const bad = () => { if (settled) return; settled = true; cleanup(); reject(new Error('video could not be decoded')); };
+      const timer = setTimeout(bad, 15000);
+      video.addEventListener('loadeddata', ok);
+      video.addEventListener('canplay', ok);
+      video.addEventListener('error', bad);
+      video.preload = 'auto';                   // every browser (Safari included) decodes it now, not on demand
+      video.src = URL.createObjectURL(blob);
+      video.load();
+    });
+  }
+
+  // Safari only paints seeked frames after a video has played once: prime it while it is still invisible.
+  async function onVideoReady() {
+    try {
+      const p = video.play();
+      if (p && typeof p.then === 'function') {
+        p.catch(() => {});                      // a refused or interrupted play is fine; seeking still works
+        await Promise.race([p, new Promise(r => setTimeout(r, 600))]);
+      }
+    } catch (e) { /* ignore */ }
+    video.pause();
+    videoReady = true;
+    seekBusy = false;
+    pendingTime = null;
+    requestSeek(shown * video.duration);
+    stage.classList.add('video-ready');
+    loader.ready();
   }
   function failVideo() {
     stage.classList.add('video-failed');   // the poster carries the whole journey
+    loader.dismiss();
   }
 
   function enableScrub() {
@@ -301,8 +393,13 @@
     stage.style.removeProperty('--fk');
   }
   function applyHeroMode() {
-    if (GATES.some(q => matchMedia(q).matches)) disableScrub();
-    else enableScrub();
+    if (GATES.some(q => matchMedia(q).matches)) {
+      disableScrub();
+      root.classList.remove('scrub');       // also covers <head> and this script disagreeing at startup
+      loader.dismiss();                     // the still hero needs no waiting
+    } else {
+      enableScrub();
+    }
   }
   MQLS.forEach(m => m.addEventListener ? m.addEventListener('change', applyHeroMode) : m.addListener(applyHeroMode));
 
@@ -422,7 +519,29 @@
     const btn = $('.pour-btn', tile);
     const label = $('.pour-label', tile);
     const result = $('#pour-result');
-    const MSG = 'You found it: a free extra topping on any waffle. Show this screen at the counter.';
+
+    // Six secret deals. Every new visitor is dealt one at random; it is remembered on their
+    // device, so a returning visitor keeps the same deal instead of reloading for a better one.
+    const DEALS = [
+      { id: 'top',   text: 'a free extra topping on any waffle',              code: 'POUR-TOP',   color: '#C97A1E' },
+      { id: 'chai',  text: 'a free karak chai with any breakfast',            code: 'POUR-CHAI',  color: '#A0643A' },
+      { id: 'ten',   text: '10% off your whole table',                        code: 'POUR-10',    color: '#E0457B' },
+      { id: 'scoop', text: 'a free scoop of vanilla ice cream on any waffle', code: 'POUR-SCOOP', color: '#F3D7A6' },
+      { id: 'latte', text: 'half price on your second Iced Spanish Latte',    code: 'POUR-LATTE', color: '#6E4326' },
+      { id: 'oj',    text: 'a free fresh orange juice with any savory plate', code: 'POUR-OJ',    color: '#F39A1E' }
+    ];
+    const deal = (() => {
+      const KEY = 'ww-secret-deal';
+      let saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) { /* storage blocked: deal a fresh one each visit */ }
+      const known = DEALS.find(d => d.id === saved);
+      if (known) return known;
+      const r = window.crypto && crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296 : Math.random();
+      const picked = DEALS[Math.floor(r * DEALS.length)];
+      try { localStorage.setItem(KEY, picked.id); } catch (e) { /* ignore */ }
+      return picked;
+    })();
+    svg.style.setProperty('--deal', deal.color);   // each deal pours its own colour
     let p = 0, holding = false, raf = null, last = 0, done = false, pinned = false, lastW = -1;
 
     function write() {
@@ -450,7 +569,11 @@
       tile.classList.remove('holding');
       tile.classList.add('done');
       label.textContent = 'Poured!';
-      result.textContent = MSG;
+      const code = document.createElement('span');
+      code.className = 'deal-code';
+      code.textContent = `Code: ${deal.code}`;
+      result.textContent = `You found it: ${deal.text}. Show this screen at the counter.`;
+      result.append(' ', code);
     }
     function start() {
       if (done) return;
@@ -815,7 +938,7 @@
   setInterval(updateStatus, 30000);
   if (RM.matches) pinToFinalStates();
   applyHeroMode();
-  if (scrubOn) runLoadRamp(); else loadK = 1;
+  if (scrubOn) loader.onLift(runLoadRamp); else loadK = 1;   // band one assembles as the loader lifts
   syrup.build();
 
   let rz = null;
@@ -829,4 +952,6 @@
   });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (scrubOn) measure(); syrup.build(); });
   addEventListener('load', () => { if (scrubOn) { measure(); onScroll(); } syrup.build(); });
+
+  root.setAttribute('data-js-done', '');   // setup finished: the <head> safety net stands down
 })();
