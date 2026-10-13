@@ -145,7 +145,8 @@
   const ring = $('.ring', hero);
   const cue = $('.hero-cue', hero);
   const VIDEO_URL = 'assets/video/hero-scrub.mp4';
-  const VIDEO_BYTES = 2175597;               // real size: fallback when Content-Length is missing
+  const VIDEO_BYTES = 1946914;               // real size: fallback when Content-Length is missing
+  const VIDEO_FPS = 24;                      // the film's frame rate: seeks snap to whole frames
   const POSTER_URL = 'assets/img/hero-poster.jpg';
 
   // These five strings match the inline gate in <head> and the CSS guard exactly.
@@ -251,13 +252,17 @@
   }
 
   // Seeks never overlap: keep only the newest target, one follow-up per completed seek.
+  // Targets snap to whole frames, and a frame already on screen is never decoded again.
+  let shownFrame = -1;
   function requestSeek(t) {
     if (!videoReady || !isFinite(video.duration) || !video.duration) return;
-    t = clamp(t, 0, video.duration - 0.04);
     if (seekBusy) { pendingTime = t; return; }
-    if (Math.abs(video.currentTime - t) < 0.001) return;
+    const lastFrame = Math.max(0, Math.round(video.duration * VIDEO_FPS) - 1);
+    const f = clamp(Math.round(t * VIDEO_FPS), 0, lastFrame);
+    if (f === shownFrame) return;
     seekBusy = true;
-    video.currentTime = t;
+    shownFrame = f;
+    video.currentTime = (f + 0.5) / VIDEO_FPS;   // the middle of the frame lands on it exactly
   }
   video.addEventListener('seeked', () => {
     seekBusy = false;
@@ -266,6 +271,7 @@
   video.addEventListener('error', () => {
     seekBusy = false;
     pendingTime = null;
+    shownFrame = -1;
     if (!videoReady) failVideo();
   });
 
@@ -367,6 +373,7 @@
     videoReady = true;
     seekBusy = false;
     pendingTime = null;
+    shownFrame = -1;                            // priming may have moved the playhead: always seek once
     requestSeek(shown * video.duration);
     stage.classList.add('video-ready');
     loader.ready();

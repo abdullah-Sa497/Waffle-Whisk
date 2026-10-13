@@ -111,6 +111,8 @@ main:focus{outline:none}
 .strip-hours{display:inline-flex;align-items:center;gap:7px;margin-left:auto;white-space:nowrap}
 
 .nav-pill{display:flex;align-items:center;gap:14px;margin-top:10px;padding:7px 7px 7px 12px;background:rgba(255,252,246,.86);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);border:2px solid var(--maple);border-radius:999px;box-shadow:0 4px 0 var(--maple)}
+/* over the scroll film, a live blur would be recomputed on every video frame: use a near-solid fill instead */
+.scrub .nav-pill{background:rgba(255,252,246,.96);-webkit-backdrop-filter:none;backdrop-filter:none}
 .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto;min-height:44px}
 .logo{width:38px;height:38px;flex:none;transition:transform .5s var(--ease-spring)}
 .brand:hover .logo{transform:rotate(-12deg) scale(1.06)}
@@ -239,7 +241,7 @@ main:focus{outline:none}
 .band-4 .cta-row{--kb:clamp(0,(var(--k) - .78) * 5,1);opacity:var(--kb);transform:translateY(calc((1 - var(--kb)) * 14px))}
 
 /* scroll cue + honest loading ring */
-.scrub .hero-cue{display:flex;position:absolute;z-index:4;left:50%;bottom:28px;align-items:center;gap:10px;padding:7px 16px 7px 8px;translate:-50% 0;background:rgba(255,252,246,.9);border:2px solid var(--maple);border-radius:999px;font:500 .875rem/1 var(--f-mono);letter-spacing:.04em;opacity:var(--cue,1);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.scrub .hero-cue{display:flex;position:absolute;z-index:4;left:50%;bottom:28px;align-items:center;gap:10px;padding:7px 16px 7px 8px;translate:-50% 0;background:var(--panel);border:2px solid var(--maple);border-radius:999px;font:500 .875rem/1 var(--f-mono);letter-spacing:.04em;opacity:var(--cue,1)}
 .ring{width:30px;height:30px;transform:rotate(-90deg)}
 .ring-bg{fill:none;stroke:rgba(59,36,22,.18);stroke-width:4}
 .ring-fg{fill:none;stroke:var(--accent-ink);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .2s linear}
