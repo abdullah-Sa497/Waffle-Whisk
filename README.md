@@ -26,7 +26,7 @@ assets/video/hero-scrub.mp4
 assets/img/
 ```
 
-Fonts: Bagel Fat One, Figtree and DM Mono (Google Fonts).
+Fonts: Bagel Fat One, Figtree and DM Mono, self-hosted in `assets/fonts/` (Latin and Latin Extended pieces only, the three main files preloaded). All three are under the SIL Open Font License; the license texts sit next to the files.
 
 ## Run it locally
 
