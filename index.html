@@ -18,9 +18,10 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="preload" href="assets/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/bagel-fat-one-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/dm-mono-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Still-hero visitors (phones, portrait tablets, reduced motion): fetch the hero photo first.
+     The media list is the same five gates as the <head> script and site.js. Fonts are self-hosted and not preloaded:
+     on slow lines, preloading them delayed the hero photo. -->
+<link rel="preload" href="assets/img/hero-ending.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 720px), (orientation: portrait) and (max-width: 1024px), (orientation: portrait) and (pointer: coarse), (orientation: landscape) and (pointer: coarse) and (max-height: 560px), (prefers-reduced-motion: reduce)">
 <link rel="stylesheet" href="assets/css/site.css">
 
 <script>
